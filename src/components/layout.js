@@ -1,10 +1,22 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Global, css } from '@emotion/core'
 import { useStaticQuery, graphql } from 'gatsby'
 
 import Header from './header'
+import Footer from './footer'
 
-const Layout = ({ children }) => {
+const styles = css`
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: Roboto Mono, monospace;
+  }
+`
+
+const Layout = ({ children, maxWidth }) => {
   const data = useStaticQuery(graphql`
     query SiteTitleQuery {
       site {
@@ -18,25 +30,23 @@ const Layout = ({ children }) => {
   return (
     <>
       <Header siteTitle={data.site.siteMetadata.title} />
+      <Global styles={styles} />
       <div
         style={{
           margin: `0 auto`,
-          maxWidth: 960,
-          padding: `0 1.0875rem 1.45rem`
+          maxWidth: maxWidth || 1200,
+          marginBottom: '5em'
         }}>
         <main>{children}</main>
-        <footer>
-          © {new Date().getFullYear()}, Built with
-          {` `}
-          <a href="https://www.gatsbyjs.org">Gatsby</a>
-        </footer>
       </div>
+      <Footer />
     </>
   )
 }
 
 Layout.propTypes = {
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
+  maxWidth: PropTypes.number
 }
 
 export default Layout
