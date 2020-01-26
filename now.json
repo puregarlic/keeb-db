@@ -1,0 +1,8 @@
+{
+  "build": {
+    "env": {
+      "FAUNA_TOKEN": "@fauna-keeb-token"
+    }
+  },
+  "alias": "keeb-db.now.sh"
+}
