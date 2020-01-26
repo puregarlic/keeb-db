@@ -1,0 +1,29 @@
+enum GroupBuyCategory {
+  KEYBOARD
+  SWITCH
+  CAPS
+  MISC
+}
+
+type GroupBuy @collection(name: "group_buys") {
+  name: String!
+  end: Date!
+  category: GroupBuyCategory!
+  links: [Link!]!
+  images: [Image!]!
+}
+
+type Link @embedded {
+  label: String!
+  region: String
+  url: String!
+}
+
+type Image @embedded {
+  url: String!
+  caption: String
+}
+
+type Query {
+  allGroupBuys: [GroupBuy!]! @index(name: "all_group_buys")
+}
