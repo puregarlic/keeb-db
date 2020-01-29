@@ -10,7 +10,7 @@ const FooterBase = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 3em;
+  height: 48px;
   background: #333;
   color: white;
 `
