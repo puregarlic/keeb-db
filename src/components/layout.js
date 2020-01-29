@@ -10,6 +10,7 @@ const styles = css`
   * {
     box-sizing: border-box;
   }
+
   body {
     margin: 0;
     font-family: Roboto Mono, monospace;
@@ -35,7 +36,7 @@ const Layout = ({ children, maxWidth }) => {
         style={{
           margin: `0 auto`,
           maxWidth: maxWidth || 1200,
-          marginBottom: '5em'
+          marginBottom: '128px'
         }}>
         <main>{children}</main>
       </div>
