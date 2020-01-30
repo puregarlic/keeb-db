@@ -15,6 +15,7 @@ const ShadeBase = styled.div`
   opacity: ${props => props.opacity};
   background: ${props => props.background};
   transition: 0.1s ease-in-out;
+  backdrop-filter: blur(5px);
 `
 
 const Shade = ({ color, opacity, onClick }) => {
@@ -34,7 +35,7 @@ Shade.propTypes = {
 
 Shade.defaultProps = {
   color: '#fff',
-  opacity: 0.8
+  opacity: 0.5
 }
 
 export default Shade
