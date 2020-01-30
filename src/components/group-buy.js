@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import { css, keyframes } from '@emotion/core'
 import { Link as LinkIcon, X as XIcon, List as ListIcon } from 'react-feather'
 import { Textfit } from 'react-textfit'
-import { useHoverDirty } from 'react-use'
+import { useHover } from 'react-use'
 import { string, arrayOf, shape, number } from 'prop-types'
 import Carousel, { Modal, ModalGateway } from 'react-images'
 
@@ -54,7 +54,6 @@ const Card = styled.div`
     height: 100%;
     object-fit: cover;
     animation: ${zoom} ease-in-out 0.2s reverse backwards;
-    animation-timing-function: ease-in-out;
 
     &:hover {
       animation: ${wiggle} 0.3s;
@@ -82,6 +81,18 @@ const Info = styled.div`
   padding: 24px;
 `
 
+const shake = keyframes`
+  from, to {
+    transform: rotate(180deg);
+  }
+  33% {
+    transform: rotate(190deg);
+  }
+  66% {
+    transform: rotate(170deg);
+  }
+`
+
 const LinkButton = styled.div`
   display: flex;
   width: 48px;
@@ -89,11 +100,16 @@ const LinkButton = styled.div`
   border-radius: 100%;
   align-items: center;
   justify-content: center;
-  transition: 0.1s ease-in-out;
+  transition: 0.2s ease-in-out;
+  transform: rotate(0deg);
 
   &.active {
-    color: #fff;
-    background: #333;
+    transform: rotate(180deg);
+
+    &:hover {
+      background: gainsboro;
+      animation: ${shake} 0.4s ease-in-out infinite alternate;
+    }
   }
 
   &.active:active {
@@ -175,12 +191,39 @@ Links.propTypes = {
 const linksWidth = 256
 
 const GroupBuy = props => {
-  const infoRef = useRef(null)
-  const isHovered = useHoverDirty(infoRef)
   const [showLinks, setShowLinks] = useState(false)
   const [linksPosition, setLinksPosition] = useState({ x: 0, y: 0 })
   const [showModal, setShowModal] = useState(false)
   const [cardRef, calculateArea, dimensions] = useSafeArea()
+
+  const [info] = useHover(isHovering => (
+    <Info
+      onClick={() => {
+        setShowLinks(!showLinks)
+      }}>
+      <div style={{ gridArea: 'name' }}>
+        <Textfit mode="single" forceSingleModeWidth={true} max={24} min={14}>
+          <span style={{ fontWeight: 700 }}>{props.name}</span>
+        </Textfit>
+      </div>
+      <div style={{ gridArea: 'date', alignSelf: 'end' }}>
+        <h5
+          style={{
+            margin: 0,
+            fontVariant: 'small-caps',
+            color: '#AAA'
+          }}>
+          ends
+        </h5>
+        <b>{props.date}</b>
+      </div>
+      <div style={{ gridArea: 'links' }}>
+        <LinkButton className={isHovering ? 'active' : undefined}>
+          {showLinks ? <XIcon size={24} /> : <LinkIcon size={24} />}
+        </LinkButton>
+      </div>
+    </Info>
+  ))
 
   return (
     <>
@@ -195,43 +238,7 @@ const GroupBuy = props => {
             style={{ userSelect: 'none' }}
           />
         </div>
-        <Info
-          ref={infoRef}
-          onClick={() => {
-            setShowLinks(!showLinks)
-          }}>
-          <div style={{ gridArea: 'name' }}>
-            <Textfit
-              mode="single"
-              forceSingleModeWidth={true}
-              max={24}
-              min={14}>
-              <span style={{ fontWeight: 700 }}>{props.name}</span>
-            </Textfit>
-          </div>
-          <div style={{ gridArea: 'date', alignSelf: 'end' }}>
-            <h5
-              style={{
-                margin: 0,
-                fontVariant: 'small-caps',
-                color: '#AAA'
-              }}>
-              ends
-            </h5>
-            <b>{props.date}</b>
-          </div>
-          <div style={{ gridArea: 'links' }}>
-            <LinkButton className={isHovered ? 'active' : ''}>
-              {isHovered ? (
-                <ListIcon size={24} />
-              ) : showLinks ? (
-                <XIcon size={24} />
-              ) : (
-                <LinkIcon size={24} />
-              )}
-            </LinkButton>
-          </div>
-        </Info>
+        {info}
         {showLinks && (
           <Links
             links={props.links}
