@@ -3,7 +3,7 @@ import { graphql } from 'gatsby'
 import { format } from 'date-fns'
 import styled from '@emotion/styled'
 
-import Layout from '../components/layout'
+import Wide from '../layouts/wide'
 import SEO from '../components/seo'
 import GroupBuy from '../components/group-buy'
 
@@ -78,7 +78,7 @@ const IndexPage = ({ data }) => {
   }, [activeCategory, data.fauna.allGroupBuys.data])
 
   return (
-    <Layout>
+    <Wide>
       <SEO title="Group Buys" />
       <GridContainer>
         <div>
@@ -133,7 +133,7 @@ const IndexPage = ({ data }) => {
           </div>
         )}
       </GridContainer>
-    </Layout>
+    </Wide>
   )
 }
 
