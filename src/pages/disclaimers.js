@@ -4,7 +4,7 @@ import Narrow from '../layouts/narrow'
 import SEO from '../components/seo'
 
 const Disclaimers = () => (
-  <Narow>
+  <Narrow>
     <SEO title="Disclaimers" />
     <h1 style={{ marginTop: 0 }}>Disclaimers</h1>
     <h2>Ownership</h2>
@@ -25,7 +25,7 @@ const Disclaimers = () => (
       This project is specifically licensed under an MIT license, so feel free
       to fork it and make your own adjustments.
     </p>
-  </Narow>
+  </Narrow>
 )
 
 export default Disclaimers
