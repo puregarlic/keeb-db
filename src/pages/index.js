@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react'
 import { graphql } from 'gatsby'
+import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import styled from '@emotion/styled'
 
-import Layout from '../components/layout'
+import Wide from '../layouts/wide'
 import SEO from '../components/seo'
 import GroupBuy from '../components/group-buy'
 
@@ -15,7 +16,7 @@ const GridContainer = styled.section`
   justify-content: center;
 `
 
-const Grid = styled.div`
+const Grid = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
@@ -69,6 +70,20 @@ const categories = [
   { label: 'Miscellaneous', value: 'MISC' }
 ]
 
+const listVariants = {
+  hidden: {
+    transition: {
+      when: 'afterChildren'
+    }
+  },
+  visible: {
+    transition: {
+      when: 'beforeChildren',
+      staggerChildren: 0.05
+    }
+  }
+}
+
 const IndexPage = ({ data }) => {
   const [activeCategory, setActiveCategory] = useState('CAPS')
   const filteredGroupBuys = useMemo(() => {
@@ -78,7 +93,7 @@ const IndexPage = ({ data }) => {
   }, [activeCategory, data.fauna.allGroupBuys.data])
 
   return (
-    <Layout>
+    <Wide>
       <SEO title="Group Buys" />
       <GridContainer>
         <div>
@@ -102,12 +117,13 @@ const IndexPage = ({ data }) => {
           </div>
         </div>
         {filteredGroupBuys.length > 0 ? (
-          <Grid>
+          <Grid initial="hidden" animate="visible" variants={listVariants}>
             {filteredGroupBuys.map(groupBuy => (
               <GroupBuy
                 key={groupBuy.name}
                 name={groupBuy.name}
                 links={groupBuy.links}
+                coverImage={groupBuy.coverImage}
                 date={format(
                   new Date(
                     ...groupBuy.end
@@ -133,7 +149,7 @@ const IndexPage = ({ data }) => {
           </div>
         )}
       </GridContainer>
-    </Layout>
+    </Wide>
   )
 }
 
@@ -143,6 +159,9 @@ export const query = graphql`
       allGroupBuys {
         data {
           category
+          coverImage {
+            url
+          }
           name
           end
           images {

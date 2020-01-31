@@ -7,6 +7,7 @@ module.exports = {
     author: `@puregarlic`
   },
   plugins: [
+    `gatsby-plugin-layout`,
     `gatsby-plugin-emotion`,
     `gatsby-plugin-react-helmet`,
     `gatsby-transformer-sharp`,

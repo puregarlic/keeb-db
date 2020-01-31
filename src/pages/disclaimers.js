@@ -1,10 +1,10 @@
 import React from 'react'
 
+import Narrow from '../layouts/narrow'
 import SEO from '../components/seo'
-import Layout from '../components/layout'
 
 const Disclaimers = () => (
-  <Layout maxWidth={660}>
+  <Narrow>
     <SEO title="Disclaimers" />
     <h1 style={{ marginTop: 0 }}>Disclaimers</h1>
     <h2>Ownership</h2>
@@ -25,7 +25,7 @@ const Disclaimers = () => (
       This project is specifically licensed under an MIT license, so feel free
       to fork it and make your own adjustments.
     </p>
-  </Layout>
+  </Narrow>
 )
 
 export default Disclaimers

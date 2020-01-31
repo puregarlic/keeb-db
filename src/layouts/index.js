@@ -3,8 +3,8 @@ import PropTypes from 'prop-types'
 import { Global, css } from '@emotion/core'
 import { useStaticQuery, graphql } from 'gatsby'
 
-import Header from './header'
-import Footer from './footer'
+import Header from '../components/header'
+import Footer from '../components/footer'
 
 const styles = css`
   * {
@@ -17,7 +17,7 @@ const styles = css`
   }
 `
 
-const Layout = ({ children, maxWidth }) => {
+const Layout = ({ children }) => {
   const data = useStaticQuery(graphql`
     query SiteTitleQuery {
       site {
@@ -34,11 +34,11 @@ const Layout = ({ children, maxWidth }) => {
       <Global styles={styles} />
       <div
         style={{
-          margin: `0 auto`,
-          maxWidth: maxWidth || 1200,
+          display: 'flex',
+          justifyContent: 'center',
           marginBottom: '128px'
         }}>
-        <main>{children}</main>
+        {children}
       </div>
       <Footer />
     </>
@@ -46,8 +46,7 @@ const Layout = ({ children, maxWidth }) => {
 }
 
 Layout.propTypes = {
-  children: PropTypes.node.isRequired,
-  maxWidth: PropTypes.number
+  children: PropTypes.node.isRequired
 }
 
 export default Layout
