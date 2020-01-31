@@ -15,8 +15,8 @@ const Submit = () => (
     <p style={{ lineHeight: 1.7 }}>
       Until then, you have two options: Either check out the{' '}
       <Link to="/">group buys</Link> that I've painstakingly imported by hand so
-      far, or <b>send me a message with the group buy you want to see</b> at
-      PureGarlic#7300 on Discord.
+      far, or{' '}
+      <a href="https://discord.gg/GjhW22p">send me a message on Discord.</a>
     </p>
   </Narrow>
 )
