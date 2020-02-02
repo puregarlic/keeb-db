@@ -34,9 +34,9 @@ const Layout = ({ children }) => {
       <Global styles={styles} />
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: '128px'
+          width: '100%',
+          margin: '0 0.2vw',
+          marginBottom: '96px'
         }}>
         {children}
       </div>

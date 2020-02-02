@@ -13,6 +13,13 @@ const FooterBase = styled.div`
   height: 48px;
   background: #333;
   color: white;
+
+  @media screen and (max-width: 676px), screen and (max-height: 676px) {
+    position: unset;
+    flex-direction: column;
+    min-height: 192px;
+    justify-content: space-evenly;
+  }
 `
 
 const Footer = () => (

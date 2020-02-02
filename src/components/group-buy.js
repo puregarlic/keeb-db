@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import styled from '@emotion/styled'
-import { useHover } from 'react-use'
+import { useHover, useMedia } from 'react-use'
 import { Textfit } from 'react-textfit'
 import { css, keyframes } from '@emotion/core'
 import { string, arrayOf, shape, number } from 'prop-types'
@@ -39,6 +39,7 @@ const Card = styled(motion.div)`
   width: 300px;
   height: 320px;
   border: 3px solid #333;
+  margin: 0 auto;
   display: grid;
   background: #fff;
   grid-template-columns: 1fr;
@@ -123,46 +124,37 @@ const LinkButton = styled.div`
 `
 
 const LinkContainer = styled.div`
+  display: flex;
+  ${props => {
+    switch (props.placement) {
+      case 'left':
+        return 'justify-content: flex-end;'
+      case 'right':
+        return 'justify-content: flex-start;'
+      default:
+        return 'justify-content: center;'
+    }
+  }};
   position: relative;
   box-sizing: border-box;
-  width: ${props => props.width}px;
   top: -317px;
   ${props => {
     switch (props.placement) {
       case 'left':
-        return `left: -${props.width + 24}px;`
-      default:
+        return `right: calc(100% + 24px);`
+      case 'right':
         return 'left: calc(100% + 24px);'
+      default:
+        return `top: 24px;`
     }
   }}
-`
-
-const Link = styled.div`
-  padding: 12px;
-  color: #333;
-  width: 100%;
-  border: 3px solid #333;
-  background: #fff;
-  margin-bottom: 16px;
-  box-shadow: 8px 8px 0 deepskyblue;
-  transition: 0.1s ease-in-out;
-
-  &:hover {
-    box-shadow: 6px 6px 0 deepskyblue;
-    transform: translate(2px, 2px);
-  }
-
-  &:active {
-    box-shadow: none;
-    transform: translate(8px, 8px);
-  }
 `
 
 const NewLink = styled(motion.a)`
   display: block;
   padding: 12px;
   color: #333;
-  width: 100%;
+  width: 256px;
   border: 3px solid #333;
   background: #fff;
   margin-bottom: 16px;
@@ -187,8 +179,8 @@ const Links = ({ placement, width, links }) => {
     () => ({
       visible: {
         opacity: 1,
-        x: 0,
-        y: 0,
+        x: -4,
+        y: -4,
         boxShadow: '8px 8px 0 deepskyblue'
       },
       hidden: {
@@ -197,14 +189,14 @@ const Links = ({ placement, width, links }) => {
         y: 0
       },
       hover: {
-        x: 2,
-        y: 2,
+        x: -2,
+        y: -2,
         boxShadow: '6px 6px 0 deepskyblue'
       },
       tap: {
-        x: 8,
-        y: 8,
-        boxShadow: 'none'
+        x: 4,
+        y: 4,
+        boxShadow: '0 0 0 deepskyblue'
       }
     }),
     []
@@ -262,6 +254,7 @@ const animVariants = {
 }
 
 const GroupBuy = props => {
+  const isMobile = useMedia('screen and (max-width: 676px)', false)
   const [showLinks, setShowLinks] = useState(false)
   const [linksPosition, setLinksPosition] = useState({ x: 0, y: 0 })
   const [showModal, setShowModal] = useState(false)
@@ -340,7 +333,7 @@ const GroupBuy = props => {
             <Links
               links={props.links}
               width={linksWidth}
-              placement={calculateArea()}
+              placement={isMobile ? 'bottom' : calculateArea()}
             />
           )}
         </AnimatePresence>
@@ -353,7 +346,7 @@ const GroupBuy = props => {
           <Modal onClose={() => setShowModal(false)}>
             <Carousel
               views={[
-                props.coverImage,
+                { source: props.coverImage.url },
                 ...props.images.map(image => {
                   return { source: image.url }
                 })
