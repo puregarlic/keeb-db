@@ -41,6 +41,12 @@ module.exports = {
         fonts: ['roboto mono:400,500,700'],
         display: 'swap'
       }
+    },
+    {
+      resolve: `gatsby-plugin-fullstory`,
+      options: {
+        fs_org: process.env.FULLSTORY_ORG
+      }
     }
     // this (optional) plugin enables Progressive Web App + Offline functionality
     // To learn more, visit: https://gatsby.dev/offline
