@@ -9,6 +9,13 @@ const HeaderLayout = styled.header`
   align-items: center;
   padding: 0 64px;
   min-height: 128px;
+
+  @media screen and (max-width: 520px) {
+    padding: 0 10vw;
+    flex-direction: column;
+    justify-content: space-evenly;
+    min-height: 192px;
+  }
 `
 
 const SubmitButton = styled(Link)`

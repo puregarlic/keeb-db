@@ -9,17 +9,31 @@ import SEO from '../components/seo'
 import GroupBuy from '../components/group-buy'
 
 const GridContainer = styled.section`
-  width: 100%;
   display: grid;
-  grid-template-columns: 1fr 948px;
+  grid-template-columns: 200px 948px;
   gap: 48px;
   justify-content: center;
+
+  @media screen and (max-width: 1200px) {
+    grid-template-columns: 1fr;
+    padding: 0 48px;
+    gap: 36px;
+  }
 `
 
 const Grid = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+
+  @media screen and (max-width: 956px) {
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+  }
+
+  @media screen and (max-width: 676px) {
+    grid-template-columns: 1fr;
+  }
 `
 
 const CategoryToggle = styled.button`
@@ -120,7 +134,7 @@ const IndexPage = ({ data }) => {
           <Grid initial="hidden" animate="visible" variants={listVariants}>
             {filteredGroupBuys.map(groupBuy => (
               <GroupBuy
-                key={groupBuy.name}
+                key={`${groupBuy.name}-${groupBuy.end}`}
                 name={groupBuy.name}
                 links={groupBuy.links}
                 coverImage={groupBuy.coverImage}
