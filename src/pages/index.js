@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { graphql } from 'gatsby'
 import { motion, AnimatePresence } from 'framer-motion'
-import { format } from 'date-fns'
+import { format, compareAsc, parseISO, parse } from 'date-fns'
 import styled from '@emotion/styled'
 
 import Wide from '../layouts/wide'
@@ -101,9 +101,14 @@ const listVariants = {
 const IndexPage = ({ data }) => {
   const [activeCategory, setActiveCategory] = useState('CAPS')
   const filteredGroupBuys = useMemo(() => {
-    return data.fauna.allGroupBuys.data.filter(
+    const groupBuys = data.fauna.allGroupBuys.data.filter(
       groupBuy => groupBuy.category === activeCategory
     )
+    groupBuys.sort((groupBuyA, groupBuyB) =>
+      compareAsc(parseISO(groupBuyA.end), parseISO(groupBuyB.end))
+    )
+
+    return groupBuys
   }, [activeCategory, data.fauna.allGroupBuys.data])
 
   return (
@@ -138,14 +143,7 @@ const IndexPage = ({ data }) => {
                 name={groupBuy.name}
                 links={groupBuy.links}
                 coverImage={groupBuy.coverImage}
-                date={format(
-                  new Date(
-                    ...groupBuy.end
-                      .split('-')
-                      .map((n, i) => (i === 1 ? n - 1 : n))
-                  ),
-                  'LLL do, Y'
-                )}
+                date={format(parseISO(groupBuy.end), 'LLL do, Y')}
                 images={groupBuy.images}
               />
             ))}
