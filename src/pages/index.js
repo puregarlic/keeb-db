@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { graphql } from 'gatsby'
 import { motion, AnimatePresence } from 'framer-motion'
-import { format, compareAsc, parseISO, parse } from 'date-fns'
+import { format, compareAsc, parseISO, isPast, isFuture } from 'date-fns'
 import styled from '@emotion/styled'
 
 import Wide from '../layouts/wide'
@@ -111,6 +111,32 @@ const IndexPage = ({ data }) => {
     return groupBuys
   }, [activeCategory, data.fauna.allGroupBuys.data])
 
+  const { open, closed, upcoming } = useMemo(() => {
+    const open = filteredGroupBuys.filter(groupBuy => {
+      if (groupBuy.start) {
+        return (
+          isPast(parseISO(groupBuy.start)) && isFuture(parseISO(groupBuy.end))
+        )
+      } else {
+        return isFuture(parseISO(groupBuy.end))
+      }
+    })
+
+    const closed = filteredGroupBuys.filter(groupBuy => {
+      return isPast(parseISO(groupBuy.end))
+    })
+
+    const upcoming = filteredGroupBuys.filter(groupBuy => {
+      return groupBuy.start && isFuture(parseISO(groupBuy.start))
+    })
+
+    return {
+      open,
+      closed,
+      upcoming
+    }
+  }, [filteredGroupBuys])
+
   return (
     <Wide>
       <SEO title="Group Buys" />
@@ -136,18 +162,68 @@ const IndexPage = ({ data }) => {
           </div>
         </div>
         {filteredGroupBuys.length > 0 ? (
-          <Grid initial="hidden" animate="visible" variants={listVariants}>
-            {filteredGroupBuys.map(groupBuy => (
-              <GroupBuy
-                key={`${groupBuy.name}-${groupBuy.end}`}
-                name={groupBuy.name}
-                links={groupBuy.links}
-                coverImage={groupBuy.coverImage}
-                date={format(parseISO(groupBuy.end), 'LLL do, Y')}
-                images={groupBuy.images}
-              />
-            ))}
-          </Grid>
+          <div>
+            {open.length > 0 && (
+              <>
+                <h1 style={{ marginTop: 0 }}>Open</h1>
+                <Grid
+                  initial="hidden"
+                  animate="visible"
+                  variants={listVariants}>
+                  {open.map(groupBuy => (
+                    <GroupBuy
+                      key={`${groupBuy.name}-${groupBuy.end}`}
+                      name={groupBuy.name}
+                      links={groupBuy.links}
+                      coverImage={groupBuy.coverImage}
+                      date={format(parseISO(groupBuy.end), 'LLL do, Y')}
+                      images={groupBuy.images}
+                    />
+                  ))}
+                </Grid>
+              </>
+            )}
+            {upcoming.length > 0 && (
+              <>
+                <h1 style={{ marginTop: '64px' }}>Upcoming</h1>
+                <Grid
+                  initial="hidden"
+                  animate="visible"
+                  variants={listVariants}>
+                  {upcoming.map(groupBuy => (
+                    <GroupBuy
+                      key={`${groupBuy.name}-${groupBuy.end}`}
+                      name={groupBuy.name}
+                      links={groupBuy.links}
+                      coverImage={groupBuy.coverImage}
+                      date={format(parseISO(groupBuy.end), 'LLL do, Y')}
+                      images={groupBuy.images}
+                    />
+                  ))}
+                </Grid>
+              </>
+            )}
+            {closed.length > 0 && (
+              <>
+                <h1 style={{ marginTop: '64px' }}>Closed</h1>
+                <Grid
+                  initial="hidden"
+                  animate="visible"
+                  variants={listVariants}>
+                  {closed.map(groupBuy => (
+                    <GroupBuy
+                      key={`${groupBuy.name}-${groupBuy.end}`}
+                      name={groupBuy.name}
+                      links={groupBuy.links}
+                      coverImage={groupBuy.coverImage}
+                      date={format(parseISO(groupBuy.end), 'LLL do, Y')}
+                      images={groupBuy.images}
+                    />
+                  ))}
+                </Grid>
+              </>
+            )}
+          </div>
         ) : (
           <div
             style={{
