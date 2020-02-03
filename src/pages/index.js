@@ -176,7 +176,7 @@ const IndexPage = ({ data }) => {
                       name={groupBuy.name}
                       links={groupBuy.links}
                       coverImage={groupBuy.coverImage}
-                      date={format(parseISO(groupBuy.end), 'LLL do, Y')}
+                      date={groupBuy.end}
                       images={groupBuy.images}
                     />
                   ))}
@@ -196,7 +196,7 @@ const IndexPage = ({ data }) => {
                       name={groupBuy.name}
                       links={groupBuy.links}
                       coverImage={groupBuy.coverImage}
-                      date={format(parseISO(groupBuy.end), 'LLL do, Y')}
+                      date={groupBuy.end}
                       images={groupBuy.images}
                     />
                   ))}
@@ -216,7 +216,7 @@ const IndexPage = ({ data }) => {
                       name={groupBuy.name}
                       links={groupBuy.links}
                       coverImage={groupBuy.coverImage}
-                      date={format(parseISO(groupBuy.end), 'LLL do, Y')}
+                      date={groupBuy.end}
                       images={groupBuy.images}
                     />
                   ))}

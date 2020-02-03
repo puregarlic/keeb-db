@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import styled from '@emotion/styled'
 import { useHover, useMedia } from 'react-use'
 import { Textfit } from 'react-textfit'
+import { isFuture, parseISO, format } from 'date-fns'
 import { css, keyframes } from '@emotion/core'
 import { string, arrayOf, shape, number } from 'prop-types'
 import Carousel, { Modal, ModalGateway } from 'react-images'
@@ -277,9 +278,9 @@ const GroupBuy = props => {
             fontVariant: 'small-caps',
             color: '#AAA'
           }}>
-          ends
+          {isFuture(parseISO(props.date)) ? 'ends' : 'ended'}
         </h5>
-        <b>{props.date}</b>
+        <b>{format(parseISO(props.date), 'LLL do, Y')}</b>
       </div>
       <div style={{ gridArea: 'links' }}>
         <LinkButton className={isHovering ? 'active' : undefined}>
