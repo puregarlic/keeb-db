@@ -26,11 +26,11 @@ module.exports = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `gatsby-starter-default`,
-        short_name: `starter`,
+        name: `Keeb DB`,
+        short_name: `Keeb DB`,
         start_url: `/`,
-        background_color: `#663399`,
-        theme_color: `#663399`,
+        background_color: `#FFF`,
+        theme_color: `#7FFFD4`,
         display: `minimal-ui`,
         icon: `src/images/icon.png` // This path is relative to the root of the site.
       }
