@@ -48,6 +48,7 @@ module.exports = {
         fs_org: process.env.FULLSTORY_ORG
       }
     },
+    `gatsby-plugin-theme-ui`,
     ...(process.env.NODE_ENV !== 'production'
       ? [
           {
