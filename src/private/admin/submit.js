@@ -4,6 +4,7 @@ import { X as XIcon } from 'react-feather'
 import { addDays, formatISO } from 'date-fns'
 import { object, array, string, date } from 'yup'
 import { useMutation } from 'urql'
+import { Persist } from 'formik-persist'
 import { Formik, Form, Field, ErrorMessage, FieldArray } from 'formik'
 import { Flex, Heading, Box, Button, Image } from 'rebass'
 import { Input, Select, Label } from '@rebass/forms'
@@ -86,7 +87,7 @@ const mutation = `
 const DataInput = () => {
   const [addGroupBuyResult, addGroupBuy] = useMutation(mutation)
 
-  function onSubmit(values, actions) {
+  async function onSubmit(values, actions) {
     const input = {
       ...values,
       status: {
@@ -97,9 +98,15 @@ const DataInput = () => {
       }
     }
 
-    addGroupBuy({
-      input
-    })
+    try {
+      const res = await addGroupBuy({
+        input
+      })
+      if (res.errors) throw new Error()
+      actions.resetForm()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
@@ -121,6 +128,7 @@ const DataInput = () => {
           onSubmit={onSubmit}>
           {fieldVals => (
             <Form>
+              <Persist name="submission-form" />
               <Heading fontSize={3} mb={3}>
                 Details
               </Heading>
@@ -264,7 +272,7 @@ const DataInput = () => {
                       mb={5}
                       type="button"
                       onClick={() => helpers.push({ url: '', caption: '' })}>
-                      Add another image
+                      Add image
                     </Button>
                   </>
                 )}
@@ -317,22 +325,23 @@ const DataInput = () => {
                       </Box>
                     ))}
                     <Button
+                      mb={6}
                       width={1}
                       type="button"
                       onClick={() =>
                         helpers.push({ url: '', region: '', label: '' })
                       }>
-                      Add another link
+                      Add link
                     </Button>
                   </>
                 )}
               </FieldArray>
-              {addGroupBuyResult.fetching ? (
+              {fieldVals.isSubmitting ? (
                 <Flex width={1} justifyContent="center">
                   <Loading />
                 </Flex>
               ) : (
-                <Button type="submit" width={1} mt={6} variant="confirm">
+                <Button type="submit" width={1} variant="confirm">
                   Submit
                 </Button>
               )}

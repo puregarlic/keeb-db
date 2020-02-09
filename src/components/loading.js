@@ -26,8 +26,12 @@ const leftSquare = keyframes`
 `
 
 const Loading = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 64px;
+
   &::before {
-    position: absolute;
     content: '';
     display: block;
     width: 24px;
@@ -39,7 +43,6 @@ const Loading = styled.div`
   }
 
   &::after {
-    position: absolute;
     content: '';
     display: block;
     width: 24px;
