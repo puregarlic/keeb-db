@@ -272,15 +272,19 @@ const GroupBuy = props => {
         </Textfit>
       </div>
       <div style={{ gridArea: 'date', alignSelf: 'end' }}>
-        <h5
-          style={{
-            margin: 0,
-            fontVariant: 'small-caps',
-            color: '#AAA'
-          }}>
-          {isFuture(parseISO(props.date)) ? 'ends' : 'ended'}
-        </h5>
-        <b>{format(parseISO(props.date), 'LLL do, Y')}</b>
+        {props.date && (
+          <>
+            <h5
+              style={{
+                margin: 0,
+                fontVariant: 'small-caps',
+                color: '#AAA'
+              }}>
+              {props.date.label}
+            </h5>
+            <b>{props.date.time}</b>
+          </>
+        )}
       </div>
       <div style={{ gridArea: 'links' }}>
         <LinkButton className={isHovering ? 'active' : undefined}>
@@ -346,10 +350,11 @@ const GroupBuy = props => {
         {showModal && (
           <Modal onClose={() => setShowModal(false)}>
             <Carousel
+              hideControlsWhenIdle={false}
               views={[
                 { source: props.coverImage.url },
                 ...props.images.map(image => {
-                  return { source: image.url }
+                  return { source: image.url, caption: image.caption }
                 })
               ]}
             />
@@ -372,7 +377,10 @@ GroupBuy.propTypes = {
     })
   ),
   name: string,
-  date: string,
+  date: shape({
+    label: string,
+    time: string
+  }),
   links: arrayOf(
     shape({
       label: string,

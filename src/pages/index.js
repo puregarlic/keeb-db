@@ -1,7 +1,16 @@
 import React, { useMemo, useState } from 'react'
 import { graphql } from 'gatsby'
 import { motion, AnimatePresence } from 'framer-motion'
-import { format, compareAsc, parseISO, isPast, isFuture } from 'date-fns'
+import {
+  compareAsc,
+  parseISO,
+  isPast,
+  isFuture,
+  isToday,
+  parse,
+  format,
+  compareDesc
+} from 'date-fns'
 import styled from '@emotion/styled'
 
 import Wide from '../layouts/wide'
@@ -105,35 +114,76 @@ const IndexPage = ({ data }) => {
       groupBuy => groupBuy.category === activeCategory
     )
     groupBuys.sort((groupBuyA, groupBuyB) =>
-      compareAsc(parseISO(groupBuyA.end), parseISO(groupBuyB.end))
+      compareAsc(parseISO(groupBuyA.status.end), parseISO(groupBuyB.status.end))
     )
 
     return groupBuys
   }, [activeCategory, data.fauna.allGroupBuys.data])
 
-  const { open, closed, upcoming } = useMemo(() => {
-    const open = filteredGroupBuys.filter(groupBuy => {
-      if (groupBuy.start) {
-        return (
-          isPast(parseISO(groupBuy.start)) && isFuture(parseISO(groupBuy.end))
-        )
-      } else {
-        return isFuture(parseISO(groupBuy.end))
+  const groupBuys = useMemo(() => {
+    const [open, closed, upcoming, planned, cancelled] = [[], [], [], [], []]
+
+    for (const groupBuy of filteredGroupBuys) {
+      switch (groupBuy.status.state) {
+        case 'PLANNED':
+          planned.push(groupBuy)
+          break
+        case 'CANCELLED':
+          cancelled.push(groupBuy)
+          break
+        default:
+          const {
+            status: { start, end }
+          } = groupBuy
+          if (start && isFuture(parseISO(start))) upcoming.push(groupBuy)
+          else if (
+            start &&
+            (isPast(parseISO(start)) || isToday(parseISO(start))) &&
+            end &&
+            (isFuture(parseISO(end)) || isToday(parseISO(end)))
+          )
+            open.push(groupBuy)
+          else if (end && isPast(parseISO(end))) closed.push(groupBuy)
       }
-    })
+    }
 
-    const closed = filteredGroupBuys.filter(groupBuy => {
-      return isPast(parseISO(groupBuy.end))
+    open.sort((a, b) =>
+      compareAsc(parseISO(a.status.end), parseISO(b.status.end))
+    )
+    closed.sort((a, b) =>
+      compareDesc(parseISO(a.status.end), parseISO(b.status.end))
+    )
+    upcoming.sort((a, b) =>
+      compareAsc(parseISO(a.status.start), parseISO(b.status.start))
+    )
+    cancelled.sort((a, b) => {
+      const aText = a.name
+      const bText = b.name
+      return aText < bText ? -1 : aText > bText ? 1 : 0
     })
+    planned.sort((a, b) => {
+      let aDate, bDate
+      try {
+        aDate = parse(a.status.eta, 'MMM yyyy')
+      } catch (error) {
+        aDate = parse(a.status.eta, 'qqq yyyy', new Date())
+      }
 
-    const upcoming = filteredGroupBuys.filter(groupBuy => {
-      return groupBuy.start && isFuture(parseISO(groupBuy.start))
+      try {
+        bDate = parse(b.status.eta, 'MMM yyyy')
+      } catch (error) {
+        bDate = parse(b.states.eta, 'qqq yyyy', new Date())
+      }
+
+      return compareAsc(aDate, bDate)
     })
 
     return {
       open,
       closed,
-      upcoming
+      upcoming,
+      planned,
+      cancelled
     }
   }, [filteredGroupBuys])
 
@@ -163,61 +213,106 @@ const IndexPage = ({ data }) => {
         </div>
         {filteredGroupBuys.length > 0 ? (
           <div>
-            {open.length > 0 && (
+            {groupBuys.open.length > 0 && (
               <>
                 <h1 style={{ marginTop: 0 }}>Open</h1>
                 <Grid
                   initial="hidden"
                   animate="visible"
                   variants={listVariants}>
-                  {open.map(groupBuy => (
+                  {groupBuys.open.map(groupBuy => (
                     <GroupBuy
                       key={`${groupBuy.name}-${groupBuy.end}`}
-                      name={groupBuy.name}
-                      links={groupBuy.links}
-                      coverImage={groupBuy.coverImage}
-                      date={groupBuy.end}
-                      images={groupBuy.images}
+                      {...groupBuy}
+                      date={{
+                        label: 'ends',
+                        time: format(
+                          parseISO(groupBuy.status.end),
+                          'MMM do, yyyy'
+                        )
+                      }}
                     />
                   ))}
                 </Grid>
               </>
             )}
-            {upcoming.length > 0 && (
+            {groupBuys.upcoming.length > 0 && (
               <>
                 <h1 style={{ marginTop: '64px' }}>Upcoming</h1>
                 <Grid
                   initial="hidden"
                   animate="visible"
                   variants={listVariants}>
-                  {upcoming.map(groupBuy => (
+                  {groupBuys.upcoming.map(groupBuy => (
                     <GroupBuy
                       key={`${groupBuy.name}-${groupBuy.end}`}
-                      name={groupBuy.name}
-                      links={groupBuy.links}
-                      coverImage={groupBuy.coverImage}
-                      date={groupBuy.end}
-                      images={groupBuy.images}
+                      {...groupBuy}
+                      date={{
+                        label: 'starts',
+                        time: format(
+                          parseISO(groupBuy.status.start),
+                          'MMM do, yyyy'
+                        )
+                      }}
                     />
                   ))}
                 </Grid>
               </>
             )}
-            {closed.length > 0 && (
+            {groupBuys.planned.length > 0 && (
+              <>
+                <h1 style={{ marginTop: '64px' }}>Planned</h1>
+                <Grid
+                  initial="hidden"
+                  animate="visible"
+                  variants={listVariants}>
+                  {groupBuys.planned.map(groupBuy => (
+                    <GroupBuy
+                      key={`${groupBuy.name}-${groupBuy.end}`}
+                      {...groupBuy}
+                      date={{
+                        label: 'arrives',
+                        time: groupBuy.status.eta
+                      }}
+                    />
+                  ))}
+                </Grid>
+              </>
+            )}
+            {groupBuys.closed.length > 0 && (
               <>
                 <h1 style={{ marginTop: '64px' }}>Closed</h1>
                 <Grid
                   initial="hidden"
                   animate="visible"
                   variants={listVariants}>
-                  {closed.map(groupBuy => (
+                  {groupBuys.closed.map(groupBuy => (
                     <GroupBuy
                       key={`${groupBuy.name}-${groupBuy.end}`}
-                      name={groupBuy.name}
-                      links={groupBuy.links}
-                      coverImage={groupBuy.coverImage}
-                      date={groupBuy.end}
-                      images={groupBuy.images}
+                      {...groupBuy}
+                      date={{
+                        label: 'ended',
+                        time: format(
+                          parseISO(groupBuy.status.end),
+                          'MMM do, yyyy'
+                        )
+                      }}
+                    />
+                  ))}
+                </Grid>
+              </>
+            )}
+            {groupBuys.cancelled.length > 0 && (
+              <>
+                <h1 style={{ marginTop: '64px' }}>Cancelled</h1>
+                <Grid
+                  initial="hidden"
+                  animate="visible"
+                  variants={listVariants}>
+                  {groupBuys.cancelled.map(groupBuy => (
+                    <GroupBuy
+                      key={`${groupBuy.name}-${groupBuy.end}`}
+                      {...groupBuy}
                     />
                   ))}
                 </Grid>
@@ -251,9 +346,14 @@ export const query = graphql`
             url
           }
           name
-          end
+          status {
+            start
+            end
+            state
+          }
           images {
             url
+            caption
           }
           links {
             url

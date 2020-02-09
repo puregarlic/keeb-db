@@ -7,12 +7,24 @@ enum GroupBuyCategory {
 
 type GroupBuy @collection(name: "group_buys") {
   name: String!
-  start: Date
-  end: Date!
+  status: Status!
   coverImage: Image!
   category: GroupBuyCategory!
-  links: [Link!]!
-  images: [Image!]!
+  links: [Link]!
+  images: [Image]!
+}
+
+type Status @embedded {
+  eta: String
+  start: Date
+  end: Date
+  state: State!
+}
+
+enum State {
+  PLANNED
+  SCHEDULED
+  CANCELLED
 }
 
 type Link @embedded {
