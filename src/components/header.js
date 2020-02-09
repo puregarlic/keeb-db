@@ -48,34 +48,37 @@ const SubmitButton = styled(Link)`
 
 const Header = ({ siteTitle }) => {
   return (
-    <HeaderLayout>
-      <h3 style={{ margin: 0 }}>
-        <Link
-          to="/"
-          style={{
-            color: '#333',
-            textDecoration: `none`
-          }}>
-          {siteTitle}
-        </Link>
-      </h3>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <h4 style={{ margin: 0 }}>
+    <>
+      <div id="announcement-root" style={{ width: '100%' }} />
+      <HeaderLayout>
+        <h3 style={{ margin: 0 }}>
           <Link
             to="/"
             style={{
               color: '#333',
-              textDecoration: 'none'
-            }}
-            activeStyle={{
-              textDecoration: 'underline'
+              textDecoration: `none`
             }}>
-            Group Buys
+            {siteTitle}
           </Link>
-        </h4>
-        <SubmitButton to="/submit">Submit</SubmitButton>
-      </div>
-    </HeaderLayout>
+        </h3>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h4 style={{ margin: 0 }}>
+            <Link
+              to="/"
+              style={{
+                color: '#333',
+                textDecoration: 'none'
+              }}
+              activeStyle={{
+                textDecoration: 'underline'
+              }}>
+              Group Buys
+            </Link>
+          </h4>
+          <SubmitButton to="/submit">Submit</SubmitButton>
+        </div>
+      </HeaderLayout>
+    </>
   )
 }
 
