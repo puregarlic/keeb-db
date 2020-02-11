@@ -2,7 +2,8 @@
   "build": {
     "env": {
       "FAUNA_TOKEN": "@fauna-keeb-token",
-      "FULLSTORY_ORG": "@fullstory-keeb-org"
+      "FULLSTORY_ORG": "@fullstory-keeb-org",
+      "GA_TRACKING_ID": "@ga-keeb-id"
     }
   },
   "alias": "keeb-db.now.sh"

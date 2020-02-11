@@ -7,6 +7,14 @@ module.exports = {
     author: `@puregarlic`
   },
   plugins: [
+    {
+      resolve: `gatsby-plugin-google-analytics`,
+      options: {
+        trackingId: process.env.GA_TRACKING_ID,
+        anonymize: true,
+        head: true
+      }
+    },
     `gatsby-plugin-layout`,
     `gatsby-plugin-emotion`,
     `gatsby-plugin-react-helmet`,
