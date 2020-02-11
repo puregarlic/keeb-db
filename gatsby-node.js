@@ -1,3 +1,4 @@
+const axios = require('axios')
 const Vibrant = require('node-vibrant')
 const { createRemoteFileNode } = require('gatsby-source-filesystem')
 
@@ -53,25 +54,40 @@ exports.createResolvers = async ({
       colors: {
         type: 'Vibrant',
         async resolve(source) {
-          const palette = await Vibrant.from(encodeURI(source.url)).getPalette()
+          try {
+            const response = await axios({
+              method: 'get',
+              url: source.url,
+              responseType: 'arraybuffer'
+            })
+            const palette = await Vibrant.from(response.data).getPalette()
 
-          const vibrant = {
-            normal: palette.Vibrant ? palette.Vibrant.getHex() : undefined,
-            dark: palette.DarkVibrant
-              ? palette.DarkVibrant.getHex()
-              : undefined,
-            light: palette.LightVibrant
-              ? palette.LightVibrant.getHex()
-              : undefined
+            const vibrant = {
+              normal: palette.Vibrant ? palette.Vibrant.getHex() : undefined,
+              dark: palette.DarkVibrant
+                ? palette.DarkVibrant.getHex()
+                : undefined,
+              light: palette.LightVibrant
+                ? palette.LightVibrant.getHex()
+                : undefined
+            }
+
+            const muted = {
+              normal: palette.Muted ? palette.Muted.getHex() : undefined,
+              dark: palette.DarkMuted ? palette.DarkMuted.getHex() : undefined,
+              light: palette.LightMuted
+                ? palette.LightMuted.getHex()
+                : undefined
+            }
+
+            return { muted, vibrant }
+          } catch (error) {
+            console.error(error)
+            return {
+              vibrant: null,
+              muted: null
+            }
           }
-
-          const muted = {
-            normal: palette.Muted ? palette.Muted.getHex() : undefined,
-            dark: palette.DarkMuted ? palette.DarkMuted.getHex() : undefined,
-            light: palette.LightMuted ? palette.LightMuted.getHex() : undefined
-          }
-
-          return { muted, vibrant }
         }
       }
     }
