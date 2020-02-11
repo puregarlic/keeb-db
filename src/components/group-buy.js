@@ -8,6 +8,7 @@ import { css, keyframes } from '@emotion/core'
 import { string, arrayOf, shape, number } from 'prop-types'
 import Carousel, { Modal, ModalGateway } from 'react-images'
 import Img from 'gatsby-image'
+import { OutboundLink } from 'gatsby-plugin-google-analytics'
 import { Link as LinkIcon, X as XIcon, List as ListIcon } from 'react-feather'
 
 import Shade from './shade'
@@ -152,7 +153,12 @@ const LinkContainer = styled.div`
   }}
 `
 
-const NewLink = styled(motion.a)`
+const NewLink = styled(motion.button)`
+  appearance: none;
+  border-radius: 0;
+  text-align: left;
+  font-family: Roboto Mono, monospace;
+  font-size: 16px;
   display: block;
   padding: 12px;
   color: #333;
@@ -212,20 +218,22 @@ const Links = ({ placement, width, links }) => {
         animate="visible"
         exit="hidden">
         {links.map(link => (
-          <NewLink
-            variants={linkVariants}
-            exit="hidden"
-            transition={{ ease: 'easeInOut', duration: 0.1 }}
-            whileHover="hover"
-            whileTap="tap"
-            key={link.label}
+          <OutboundLink
             href={link.url}
+            key={link.label}
             target="_blank"
-            style={{ textDecorationColor: 'black' }}
-            onClick={e => e.stopPropagation()}>
-            {link.region ? <b>{link.region}: </b> : ''}
-            {link.label}
-          </NewLink>
+            rel="noopener noreferrer"
+            style={{ textDecorationColor: 'black' }}>
+            <NewLink
+              variants={linkVariants}
+              exit="hidden"
+              transition={{ ease: 'easeInOut', duration: 0.1 }}
+              whileHover="hover"
+              whileTap="tap">
+              {link.region ? <b>{link.region}: </b> : ''}
+              {link.label}
+            </NewLink>
+          </OutboundLink>
         ))}
       </motion.div>
     </LinkContainer>
