@@ -5,12 +5,10 @@ import styled from '@emotion/styled'
 const FooterBase = styled.div`
   width: 100%;
   padding: 0 48px;
-  position: fixed;
-  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
+  height: 128px;
   background: #333;
   color: white;
 
