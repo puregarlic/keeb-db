@@ -7,6 +7,7 @@ import { isFuture, parseISO, format } from 'date-fns'
 import { css, keyframes } from '@emotion/core'
 import { string, arrayOf, shape, number } from 'prop-types'
 import Carousel, { Modal, ModalGateway } from 'react-images'
+import Img from 'gatsby-image'
 import { Link as LinkIcon, X as XIcon, List as ListIcon } from 'react-feather'
 
 import Shade from './shade'
@@ -44,7 +45,7 @@ const Card = styled(motion.div)`
   display: grid;
   background: #fff;
   grid-template-columns: 1fr;
-  grid-template-rows: 180px 140px;
+  grid-template-rows: 174px 140px;
   transition: 0.1s ease-in-out;
 
   & > .img {
@@ -53,7 +54,7 @@ const Card = styled(motion.div)`
     overflow: hidden;
   }
 
-  & > .img > img {
+  & > .img > .gatsby-image-wrapper {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -67,13 +68,13 @@ const Card = styled(motion.div)`
   }
 
   &:hover {
-    box-shadow: 8px 8px 0 pink;
+    box-shadow: 8px 8px 0 ${props => props.accent};
     transform: translate(-8px, -8px);
     z-index: 2;
   }
 
   &.active {
-    box-shadow: 8px 8px 0 pink;
+    box-shadow: 8px 8px 0 ${props => props.accent};
     transform: translate(-8px, -8px);
     z-index: 2;
   }
@@ -119,7 +120,7 @@ const LinkButton = styled.div`
   }
 
   &.active:active {
-    background: pink;
+    background: aquamarine;
     color: #333;
   }
 `
@@ -278,7 +279,7 @@ const GroupBuy = props => {
               style={{
                 margin: 0,
                 fontVariant: 'small-caps',
-                color: '#AAA'
+                color: 'grey'
               }}>
               {props.date.label}
             </h5>
@@ -323,14 +324,11 @@ const GroupBuy = props => {
         variants={animVariants}
         transition={{ ease: 'easeInOut', duration: 0.1 }}
         ref={cardRef}
+        accent={props.coverImage.colors.vibrant.light}
         className={showLinks ? 'active' : ''}
         style={{ zIndex: showLinks ? 2 : undefined }}>
-        <div className="img">
-          <img
-            src={props.coverImage.url}
-            onClick={() => setShowModal(true)}
-            style={{ userSelect: 'none' }}
-          />
+        <div className="img" onClick={() => setShowModal(true)}>
+          <Img fixed={props.coverImage.file.childImageSharp.fixed} />
         </div>
         {info}
         <AnimatePresence>
@@ -370,12 +368,12 @@ GroupBuy.propTypes = {
     caption: string,
     url: string
   }),
-  images: arrayOf(
-    shape({
-      caption: string,
-      url: string
-    })
-  ),
+  // images: arrayOf(
+  //   shape({
+  //     caption: string,
+  //     url: string
+  //   })
+  // ),
   name: string,
   date: shape({
     label: string,

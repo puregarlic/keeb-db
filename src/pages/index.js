@@ -344,6 +344,27 @@ export const query = graphql`
           category
           coverImage {
             url
+            caption
+            colors {
+              vibrant {
+                light
+              }
+              muted {
+                light
+              }
+            }
+            file {
+              childImageSharp {
+                fixed(
+                  width: 294
+                  height: 174
+                  quality: 100
+                  cropFocus: CENTER
+                ) {
+                  ...GatsbyImageSharpFixed
+                }
+              }
+            }
           }
           name
           status {
