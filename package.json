@@ -7,6 +7,8 @@
   "dependencies": {
     "@emotion/core": "^10.0.27",
     "@emotion/styled": "^10.0.27",
+    "@mdx-js/mdx": "^1.5.5",
+    "@mdx-js/react": "^1.5.5",
     "@rebass/forms": "^4.0.5",
     "date-fns": "^2.9.0",
     "dotenv": "^8.2.0",
@@ -20,6 +22,7 @@
     "gatsby-plugin-google-fonts": "^1.0.1",
     "gatsby-plugin-layout": "^1.1.21",
     "gatsby-plugin-manifest": "^2.2.31",
+    "gatsby-plugin-mdx": "^1.0.71",
     "gatsby-plugin-offline": "^3.0.27",
     "gatsby-plugin-page-creator": "^2.1.40",
     "gatsby-plugin-react-helmet": "^3.1.16",
