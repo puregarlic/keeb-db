@@ -1,6 +1,9 @@
 import forms from './rebass/forms'
 import buttons from './rebass/buttons'
 
+import text from './mdx/text'
+import headings from './mdx/headings'
+
 export default {
   colors: {
     text: '#333',
@@ -23,10 +26,10 @@ export default {
     bold: 700
   },
   lineHeights: {
-    body: 1.7,
+    body: 1.9,
     heading: 1.5
   },
-  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64, 72],
+  fontSizes: [12, 14, 16, 18, 20, 24, 32, 48, 64],
   space: [0, 3, 6, 12, 24, 48, 96],
   breakpoints: ['40em', '52em', '64em'],
   borders: ['3px solid #333'],
@@ -58,6 +61,10 @@ export default {
         pressed: '0 0 0 yellow'
       }
     }
+  },
+  styles: {
+    ...headings,
+    ...text
   },
   forms,
   buttons
