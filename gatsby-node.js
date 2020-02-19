@@ -1,6 +1,6 @@
 const axios = require('axios')
 const Vibrant = require('node-vibrant')
-const { createRemoteFileNode } = require('gatsby-source-filesystem')
+const { createFileNodeFromBuffer } = require('gatsby-source-filesystem')
 
 exports.createSchemaCustomization = async ({ actions, schema }) => {
   const { createTypes } = actions
@@ -41,13 +41,17 @@ exports.createResolvers = async ({
       file: {
         type: 'File',
         async resolve(source) {
-          return await createRemoteFileNode({
-            url: encodeURI(source.url),
+          const response = await axios({
+            method: 'get',
+            url: source.url,
+            responseType: 'arraybuffer'
+          })
+          return await createFileNodeFromBuffer({
+            buffer: response.data,
             store,
             cache,
             createNode,
-            createNodeId,
-            reporter
+            createNodeId
           })
         }
       },
