@@ -3,8 +3,9 @@ require('dotenv').config()
 module.exports = {
   siteMetadata: {
     title: `Keeb DB`,
-    description: `Centralized collection of all (er, most) things keyboard`,
-    author: `@puregarlic`
+    description: `Interactive archive dedicated to cataloging the mechanical keyboards community.`,
+    author: `@puregarlic_`,
+    siteUrl: `https://keeb.center`
   },
   plugins: [
     {
