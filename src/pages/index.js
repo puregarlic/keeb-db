@@ -189,7 +189,10 @@ const IndexPage = ({ data }) => {
 
   return (
     <Wide>
-      <SEO title="Group Buys" />
+      <SEO
+        title="Group Buys"
+        description="Browse and ogle at open, upcoming, and closed group buys."
+      />
       <GridContainer>
         <div>
           <div style={{ position: 'sticky', top: '24px' }}>
