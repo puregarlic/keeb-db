@@ -11,6 +11,7 @@ import Helmet from 'react-helmet'
 import { useStaticQuery, graphql } from 'gatsby'
 
 import defaultOGImage from '../images/opengraph-image.png'
+import defaultTwitterImage from '../images/twitter-image.png'
 
 function SEO({ description, lang, meta, title, image }) {
   const { site } = useStaticQuery(
@@ -29,6 +30,7 @@ function SEO({ description, lang, meta, title, image }) {
   )
 
   const ogImage = `${site.siteMetadata.siteUrl}${image || defaultOGImage}`
+  const twitterImage = `${site.siteMetadata.siteUrl}${defaultTwitterImage}`
   const metaDescription = description || site.siteMetadata.description
 
   return (
@@ -61,7 +63,11 @@ function SEO({ description, lang, meta, title, image }) {
         },
         {
           name: `twitter:card`,
-          content: `summary`
+          content: `summary_large_image`
+        },
+        {
+          name: `twitter:image`,
+          content: twitterImage
         },
         {
           name: `twitter:creator`,
