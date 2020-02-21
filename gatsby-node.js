@@ -41,18 +41,22 @@ exports.createResolvers = async ({
       file: {
         type: 'File',
         async resolve(source) {
-          const response = await axios({
-            method: 'get',
-            url: source.url,
-            responseType: 'arraybuffer'
-          })
-          return await createFileNodeFromBuffer({
-            buffer: response.data,
-            store,
-            cache,
-            createNode,
-            createNodeId
-          })
+          try {
+            const response = await axios({
+              method: 'get',
+              url: source.url,
+              responseType: 'arraybuffer'
+            })
+            return await createFileNodeFromBuffer({
+              buffer: response.data,
+              store,
+              cache,
+              createNode,
+              createNodeId
+            })
+          } catch (error) {
+            console.log(error)
+          }
         }
       },
       colors: {

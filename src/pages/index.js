@@ -9,7 +9,8 @@ import {
   isToday,
   parse,
   format,
-  compareDesc
+  compareDesc,
+  getQuarter
 } from 'date-fns'
 import styled from '@emotion/styled'
 
@@ -162,20 +163,26 @@ const IndexPage = ({ data }) => {
       return aText < bText ? -1 : aText > bText ? 1 : 0
     })
     planned.sort((a, b) => {
-      let aDate, bDate
+      let aDate, bDate, aMonth, bMonth
       try {
-        aDate = parse(a.status.eta, 'MMM yyyy')
+        aDate = parse(a.status.eta, 'LLLL yyyy')
+        aMonth = true
       } catch (error) {
         aDate = parse(a.status.eta, 'qqq yyyy', new Date())
       }
 
       try {
-        bDate = parse(b.status.eta, 'MMM yyyy')
+        bDate = parse(b.status.eta, 'LLLL yyyy')
+        bMonth = true
       } catch (error) {
-        bDate = parse(b.states.eta, 'qqq yyyy', new Date())
+        bDate = parse(b.status.eta, 'qqq yyyy', new Date())
       }
 
-      return compareAsc(aDate, bDate)
+      let sortModifier = 1
+      if ((aMonth || bMonth) && getQuarter(aDate) === getQuarter(bDate)) {
+        sortModifier = -1
+      }
+      return compareAsc(aDate, bDate) * sortModifier
     })
 
     return {
@@ -274,7 +281,7 @@ const IndexPage = ({ data }) => {
                       key={`${groupBuy.name}-${groupBuy.end}`}
                       {...groupBuy}
                       date={{
-                        label: 'arrives',
+                        label: 'estimated',
                         time: groupBuy.status.eta
                       }}
                     />
@@ -373,6 +380,7 @@ export const query = graphql`
           status {
             start
             end
+            eta
             state
           }
           images {
