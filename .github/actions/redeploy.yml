@@ -1,0 +1,17 @@
+name: Nightly Redeploy
+
+on:
+  schedule:
+    - cron: '0 8 * * * *'
+
+jobs:
+  redeploy:
+    name: cURL Now Deploy Hook
+    runs-on: ubuntu-latest
+    steps:
+      - name: curl
+        uses: wei/curl@v1
+        env:
+          DEPLOY_HOOK: ${{ secrets.NOW_REBUILD_ENDPOINT }}
+        with:
+          args: -X POST $DEPLOY_HOOK
