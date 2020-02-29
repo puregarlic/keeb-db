@@ -2,6 +2,22 @@ const axios = require('axios')
 const Vibrant = require('node-vibrant')
 const { createFileNodeFromBuffer } = require('gatsby-source-filesystem')
 
+exports.onCreateWebpackConfig = ({
+  actions: { replaceWebpackConfig },
+  getConfig
+}) => {
+  const config = getConfig()
+
+  config.module.rules.push({
+    test: /\.worker\.js$/,
+    use: { loader: 'workerize-loader' }
+  })
+
+  config.output.globalObject = 'this'
+
+  replaceWebpackConfig(config)
+}
+
 exports.createSchemaCustomization = async ({ actions, schema }) => {
   const { createTypes } = actions
 

@@ -47,6 +47,7 @@
     "rebass": "^4.0.7",
     "theme-ui": "^0.3.1",
     "urql": "^1.8.2",
+    "workerize-loader": "^1.1.0",
     "yup": "^0.28.1"
   },
   "devDependencies": {
