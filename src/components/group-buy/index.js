@@ -11,8 +11,9 @@ import Img from 'gatsby-image'
 import { OutboundLink } from 'gatsby-plugin-google-analytics'
 import { Link as LinkIcon, X as XIcon, List as ListIcon } from 'react-feather'
 
-import Shade from './shade'
-import useSafeArea from '../hooks/use-safe-area'
+import Card from './card'
+import Shade from '../shade'
+import useSafeArea from '../../hooks/use-safe-area'
 
 const wiggle = keyframes`
   25% {
@@ -38,16 +39,10 @@ const zoom = keyframes`
   }
 `
 
-const Card = styled(motion.div)`
-  width: 300px;
-  height: 320px;
-  border: 3px solid #333;
-  margin: 0 auto;
+const Grid = styled.div`
   display: grid;
-  background: #fff;
   grid-template-columns: 1fr;
   grid-template-rows: 174px 140px;
-  transition: 0.1s ease-in-out;
 
   & > .img {
     width: 100%;
@@ -66,18 +61,6 @@ const Card = styled(motion.div)`
       animation-direction: normal;
       animation-fill-mode: forwards;
     }
-  }
-
-  &:hover {
-    box-shadow: 8px 8px 0 ${props => props.accent};
-    transform: translate(-8px, -8px);
-    z-index: 2;
-  }
-
-  &.active {
-    box-shadow: 8px 8px 0 ${props => props.accent};
-    transform: translate(-8px, -8px);
-    z-index: 2;
   }
 `
 
@@ -175,11 +158,7 @@ const linkListVariants = {
       staggerChildren: 0.05
     }
   },
-  hidden: {
-    transition: {
-      staggerChildren: 0.05
-    }
-  }
+  hidden: {}
 }
 
 const Links = ({ placement, width, links }) => {
@@ -254,21 +233,12 @@ Links.propTypes = {
 
 const linksWidth = 256
 
-const animVariants = {
-  hidden: {
-    opacity: 0
-  },
-  visible: {
-    opacity: 1
-  }
-}
-
 const GroupBuy = props => {
   const isMobile = useMedia('screen and (max-width: 676px)', false)
   const [showLinks, setShowLinks] = useState(false)
   const [linksPosition, setLinksPosition] = useState({ x: 0, y: 0 })
   const [showModal, setShowModal] = useState(false)
-  const [cardRef, calculateArea, dimensions] = useSafeArea()
+  const [cardRef, calculateArea] = useSafeArea()
 
   const [info] = useHover(isHovering => (
     <Info
@@ -328,26 +298,24 @@ const GroupBuy = props => {
   return (
     <>
       <Card
-        positionTransition
-        variants={animVariants}
-        transition={{ ease: 'easeInOut', duration: 0.1 }}
         ref={cardRef}
-        accent={props.coverImage.colors.vibrant.light}
-        className={showLinks ? 'active' : ''}
-        style={{ zIndex: showLinks ? 2 : undefined }}>
-        <div className="img" onClick={() => setShowModal(true)}>
-          <Img fixed={props.coverImage.file.childImageSharp.fixed} />
-        </div>
-        {info}
-        <AnimatePresence>
-          {showLinks && (
-            <Links
-              links={props.links}
-              width={linksWidth}
-              placement={isMobile ? 'bottom' : calculateArea()}
-            />
-          )}
-        </AnimatePresence>
+        color={props.coverImage.colors.vibrant.light}
+        active={showLinks}>
+        <Grid>
+          <div className="img" onClick={() => setShowModal(true)}>
+            <Img fixed={props.coverImage.file.childImageSharp.fixed} />
+          </div>
+          {info}
+          <AnimatePresence>
+            {showLinks && (
+              <Links
+                links={props.links}
+                width={linksWidth}
+                placement={isMobile ? 'bottom' : calculateArea()}
+              />
+            )}
+          </AnimatePresence>
+        </Grid>
       </Card>
       <AnimatePresence>
         {showLinks && <Shade onClick={() => setShowLinks(false)} />}

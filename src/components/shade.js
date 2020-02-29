@@ -15,7 +15,6 @@ const ShadeBase = styled(motion.div)`
   z-index: 1;
   opacity: ${props => props.opacity};
   background: ${props => props.background};
-  transition: 0.1s ease-in-out;
   backdrop-filter: blur(5px);
 `
 
