@@ -110,14 +110,15 @@ const IndexPage = ({ data }) => {
 
   function getServiceWorker() {
     if (!worker.current && typeof window !== undefined) {
-      worker.current = new SortingWorker()
+      worker.current = SortingWorker()
+      console.log(worker.current)
     }
     return worker.current
   }
 
   useEffect(() => {
-    if (!query && worker.current) {
-      getServiceWorker
+    if (!query) {
+      getServiceWorker()
         .sortGroupBuys(data.fauna.allGroupBuys.data, activeCategory)
         .then(result => setGroupBuys(result))
     }
@@ -125,8 +126,8 @@ const IndexPage = ({ data }) => {
 
   useDebounce(
     () => {
-      if (query && groupBuys && worker.current) {
-        getServiceWorker
+      if (query && groupBuys) {
+        getServiceWorker()
           .searchGroupBuys(query, data.fauna.allGroupBuys.data, activeCategory)
           .then(res => setGroupBuys(res))
       }
