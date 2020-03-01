@@ -18,6 +18,7 @@ module.exports = {
     },
     `gatsby-plugin-layout`,
     `gatsby-plugin-emotion`,
+    `gatsby-plugin-workerize-loader`,
     `gatsby-plugin-react-helmet`,
     {
       resolve: `gatsby-source-filesystem`,
