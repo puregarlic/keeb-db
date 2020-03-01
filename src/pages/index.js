@@ -111,7 +111,6 @@ const IndexPage = ({ data }) => {
   function getServiceWorker() {
     if (!worker.current && typeof window !== undefined) {
       worker.current = SortingWorker()
-      console.log(worker.current)
     }
     return worker.current
   }
