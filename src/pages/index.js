@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { graphql } from 'gatsby'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useDebounce } from 'react-use'
@@ -11,8 +11,6 @@ import SEO from '../components/seo'
 import Loading from '../components/loading'
 import GroupBuy from '../components/group-buy'
 import SortingWorker from '../utils/workers/sort-group-buys.worker'
-
-const worker = SortingWorker()
 
 const GridContainer = styled.section`
   display: grid;
@@ -108,19 +106,27 @@ const IndexPage = ({ data }) => {
   const [groupBuys, setGroupBuys] = useState()
   const [searchEngine, setSearchEngine] = useState()
   const [query, setQuery] = useState('')
+  const worker = useRef(null)
+
+  function getServiceWorker() {
+    if (!worker.current && typeof window !== undefined) {
+      worker.current = new SortingWorker()
+    }
+    return worker.current
+  }
 
   useEffect(() => {
-    if (!query) {
-      worker
+    if (!query && worker.current) {
+      getServiceWorker
         .sortGroupBuys(data.fauna.allGroupBuys.data, activeCategory)
         .then(result => setGroupBuys(result))
     }
-  }, [query, activeCategory, data.fauna.allGroupBuys.data])
+  }, [query, activeCategory, data.fauna.allGroupBuys.data, worker.current])
 
   useDebounce(
     () => {
-      if (query && groupBuys) {
-        worker
+      if (query && groupBuys && worker.current) {
+        getServiceWorker
           .searchGroupBuys(query, data.fauna.allGroupBuys.data, activeCategory)
           .then(res => setGroupBuys(res))
       }
