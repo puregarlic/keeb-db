@@ -1,23 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { graphql } from 'gatsby'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  compareAsc,
-  parseISO,
-  isPast,
-  isFuture,
-  isToday,
-  parse,
-  format,
-  compareDesc,
-  getQuarter
-} from 'date-fns'
+import { useDebounce } from 'react-use'
+import { parseISO, format } from 'date-fns'
 import styled from '@emotion/styled'
+import { Input } from '@rebass/forms'
 
 import Wide from '../layouts/wide'
 import SEO from '../components/seo'
 import Loading from '../components/loading'
 import GroupBuy from '../components/group-buy'
+import SortingWorker from '../utils/workers/sort-group-buys.worker'
+
+const worker = SortingWorker()
 
 const GridContainer = styled.section`
   display: grid;
@@ -59,17 +54,16 @@ const CategoryToggle = styled.button`
   color: #333;
   font-weight: 700;
   padding: 12px;
-  transform: translate(-4px, -4px);
   box-shadow: 8px 8px 0 aquamarine;
   transition: 0.1s ease-in-out;
 
   &:hover {
-    transform: translate(-2px, -2px);
+    transform: translate(2px, 2px);
     box-shadow: 6px 6px 0 aquamarine;
   }
 
   &:active {
-    transform: translate(4px, 4px);
+    transform: translate(8px, 4px);
     box-shadow: none;
   }
 
@@ -83,7 +77,7 @@ const CategoryToggle = styled.button`
   }
 
   &.active:active {
-    translate(4px, 4px);
+    translate(8px, 8px);
     box-shadow: none;
   }
 `
@@ -110,88 +104,30 @@ const listVariants = {
 }
 
 const IndexPage = ({ data }) => {
-  const [activeCategory, setActiveCategory] = useState('CAPS')
+  const [activeCategory, setActiveCategory] = useState('')
   const [groupBuys, setGroupBuys] = useState()
+  const [searchEngine, setSearchEngine] = useState()
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
-    const selectedGroupBuys = data.fauna.allGroupBuys.data.filter(
-      groupBuy => groupBuy.category === activeCategory
-    )
-    selectedGroupBuys.sort((groupBuyA, groupBuyB) =>
-      compareAsc(parseISO(groupBuyA.status.end), parseISO(groupBuyB.status.end))
-    )
-
-    const [open, closed, upcoming, planned, cancelled] = [[], [], [], [], []]
-
-    for (const groupBuy of selectedGroupBuys) {
-      switch (groupBuy.status.state) {
-        case 'PLANNED':
-          planned.push(groupBuy)
-          break
-        case 'CANCELLED':
-          cancelled.push(groupBuy)
-          break
-        default:
-          const {
-            status: { start, end }
-          } = groupBuy
-          if (start && isFuture(parseISO(start))) upcoming.push(groupBuy)
-          else if (
-            start &&
-            (isPast(parseISO(start)) || isToday(parseISO(start))) &&
-            end &&
-            (isFuture(parseISO(end)) || isToday(parseISO(end)))
-          )
-            open.push(groupBuy)
-          else if (end && isPast(parseISO(end))) closed.push(groupBuy)
-      }
+    if (!query) {
+      worker
+        .sortGroupBuys(data.fauna.allGroupBuys.data, activeCategory)
+        .then(result => setGroupBuys(result))
     }
+  }, [query, activeCategory, data.fauna.allGroupBuys.data])
 
-    open.sort((a, b) =>
-      compareAsc(parseISO(a.status.end), parseISO(b.status.end))
-    )
-    closed.sort((a, b) =>
-      compareDesc(parseISO(a.status.end), parseISO(b.status.end))
-    )
-    upcoming.sort((a, b) =>
-      compareAsc(parseISO(a.status.start), parseISO(b.status.start))
-    )
-    cancelled.sort((a, b) => {
-      const aText = a.name
-      const bText = b.name
-      return aText < bText ? -1 : aText > bText ? 1 : 0
-    })
-    planned.sort((a, b) => {
-      let aDate, bDate, aMonth, bMonth
-      try {
-        aDate = parse(a.status.eta, 'LLLL yyyy')
-        aMonth = true
-      } catch (error) {
-        aDate = parse(a.status.eta, 'qqq yyyy', new Date())
+  useDebounce(
+    () => {
+      if (query && groupBuys) {
+        worker
+          .searchGroupBuys(query, data.fauna.allGroupBuys.data, activeCategory)
+          .then(res => setGroupBuys(res))
       }
-
-      try {
-        bDate = parse(b.status.eta, 'LLLL yyyy')
-        bMonth = true
-      } catch (error) {
-        bDate = parse(b.status.eta, 'qqq yyyy', new Date())
-      }
-
-      let sortModifier = 1
-      if ((aMonth || bMonth) && getQuarter(aDate) === getQuarter(bDate)) {
-        sortModifier = -1
-      }
-      return compareAsc(aDate, bDate) * sortModifier
-    })
-
-    setGroupBuys({
-      open,
-      closed,
-      upcoming,
-      planned,
-      cancelled
-    })
-  }, [activeCategory, data.fauna.allGroupBuys.data])
+    },
+    50,
+    [query]
+  )
 
   return (
     <Wide>
@@ -205,6 +141,21 @@ const IndexPage = ({ data }) => {
             <h5
               style={{
                 margin: 0,
+                marginLeft: '4px',
+                marginBottom: '12px',
+                fontVariant: 'small-caps'
+              }}>
+              search
+            </h5>
+            <Input
+              mb={4}
+              onChange={e => setQuery(e.currentTarget.value)}
+              placeholder="KAT Example..."
+            />
+            <h5
+              style={{
+                margin: 0,
+                marginLeft: '4px',
                 marginBottom: '12px',
                 fontVariant: 'small-caps'
               }}>
@@ -216,7 +167,9 @@ const IndexPage = ({ data }) => {
                 className={category.value === activeCategory ? 'active' : ''}
                 onClick={() => {
                   setGroupBuys(undefined)
-                  setActiveCategory(category.value)
+                  setActiveCategory(current =>
+                    category.value === activeCategory ? '' : category.value
+                  )
                 }}>
                 {category.label}
               </CategoryToggle>
