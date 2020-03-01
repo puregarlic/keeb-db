@@ -1,22 +1,16 @@
-import React, { useMemo, useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { graphql } from 'gatsby'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  compareAsc,
-  parseISO,
-  isPast,
-  isFuture,
-  isToday,
-  parse,
-  format,
-  compareDesc,
-  getQuarter
-} from 'date-fns'
+import { useDebounce } from 'react-use'
+import { parseISO, format } from 'date-fns'
 import styled from '@emotion/styled'
+import { Input } from '@rebass/forms'
 
 import Wide from '../layouts/wide'
 import SEO from '../components/seo'
+import Loading from '../components/loading'
 import GroupBuy from '../components/group-buy'
+import SortingWorker from '../utils/workers/sort-group-buys.worker'
 
 const GridContainer = styled.section`
   display: grid;
@@ -58,17 +52,16 @@ const CategoryToggle = styled.button`
   color: #333;
   font-weight: 700;
   padding: 12px;
-  transform: translate(-4px, -4px);
   box-shadow: 8px 8px 0 aquamarine;
   transition: 0.1s ease-in-out;
 
   &:hover {
-    transform: translate(-2px, -2px);
+    transform: translate(2px, 2px);
     box-shadow: 6px 6px 0 aquamarine;
   }
 
   &:active {
-    transform: translate(4px, 4px);
+    transform: translate(8px, 4px);
     box-shadow: none;
   }
 
@@ -82,7 +75,7 @@ const CategoryToggle = styled.button`
   }
 
   &.active:active {
-    translate(4px, 4px);
+    translate(8px, 8px);
     box-shadow: none;
   }
 `
@@ -109,90 +102,38 @@ const listVariants = {
 }
 
 const IndexPage = ({ data }) => {
-  const [activeCategory, setActiveCategory] = useState('CAPS')
-  const filteredGroupBuys = useMemo(() => {
-    const groupBuys = data.fauna.allGroupBuys.data.filter(
-      groupBuy => groupBuy.category === activeCategory
-    )
-    groupBuys.sort((groupBuyA, groupBuyB) =>
-      compareAsc(parseISO(groupBuyA.status.end), parseISO(groupBuyB.status.end))
-    )
+  const [activeCategory, setActiveCategory] = useState('')
+  const [groupBuys, setGroupBuys] = useState()
+  const [searchEngine, setSearchEngine] = useState()
+  const [query, setQuery] = useState('')
+  const worker = useRef(null)
 
-    return groupBuys
-  }, [activeCategory, data.fauna.allGroupBuys.data])
-
-  const groupBuys = useMemo(() => {
-    const [open, closed, upcoming, planned, cancelled] = [[], [], [], [], []]
-
-    for (const groupBuy of filteredGroupBuys) {
-      switch (groupBuy.status.state) {
-        case 'PLANNED':
-          planned.push(groupBuy)
-          break
-        case 'CANCELLED':
-          cancelled.push(groupBuy)
-          break
-        default:
-          const {
-            status: { start, end }
-          } = groupBuy
-          if (start && isFuture(parseISO(start))) upcoming.push(groupBuy)
-          else if (
-            start &&
-            (isPast(parseISO(start)) || isToday(parseISO(start))) &&
-            end &&
-            (isFuture(parseISO(end)) || isToday(parseISO(end)))
-          )
-            open.push(groupBuy)
-          else if (end && isPast(parseISO(end))) closed.push(groupBuy)
-      }
+  function getServiceWorker() {
+    if (!worker.current && typeof window !== undefined) {
+      worker.current = new SortingWorker()
     }
+    return worker.current
+  }
 
-    open.sort((a, b) =>
-      compareAsc(parseISO(a.status.end), parseISO(b.status.end))
-    )
-    closed.sort((a, b) =>
-      compareDesc(parseISO(a.status.end), parseISO(b.status.end))
-    )
-    upcoming.sort((a, b) =>
-      compareAsc(parseISO(a.status.start), parseISO(b.status.start))
-    )
-    cancelled.sort((a, b) => {
-      const aText = a.name
-      const bText = b.name
-      return aText < bText ? -1 : aText > bText ? 1 : 0
-    })
-    planned.sort((a, b) => {
-      let aDate, bDate, aMonth, bMonth
-      try {
-        aDate = parse(a.status.eta, 'LLLL yyyy')
-        aMonth = true
-      } catch (error) {
-        aDate = parse(a.status.eta, 'qqq yyyy', new Date())
-      }
-
-      try {
-        bDate = parse(b.status.eta, 'LLLL yyyy')
-        bMonth = true
-      } catch (error) {
-        bDate = parse(b.status.eta, 'qqq yyyy', new Date())
-      }
-
-      let sortModifier = 1
-      if ((aMonth || bMonth) && getQuarter(aDate) === getQuarter(bDate)) {
-        sortModifier = -1
-      }
-      return compareAsc(aDate, bDate) * sortModifier
-    })
-
-    return {
-      open,
-      closed,
-      upcoming,
-      planned,
-      cancelled
+  useEffect(() => {
+    if (!query && worker.current) {
+      getServiceWorker
+        .sortGroupBuys(data.fauna.allGroupBuys.data, activeCategory)
+        .then(result => setGroupBuys(result))
     }
-  }, [filteredGroupBuys])
+  }, [query, activeCategory, data.fauna.allGroupBuys.data, worker.current])
+
+  useDebounce(
+    () => {
+      if (query && groupBuys && worker.current) {
+        getServiceWorker
+          .searchGroupBuys(query, data.fauna.allGroupBuys.data, activeCategory)
+          .then(res => setGroupBuys(res))
+      }
+    },
+    50,
+    [query]
+  )
 
   return (
     <Wide>
@@ -206,6 +147,21 @@ const IndexPage = ({ data }) => {
             <h5
               style={{
                 margin: 0,
+                marginLeft: '4px',
+                marginBottom: '12px',
+                fontVariant: 'small-caps'
+              }}>
+              search
+            </h5>
+            <Input
+              mb={4}
+              onChange={e => setQuery(e.currentTarget.value)}
+              placeholder="KAT Example..."
+            />
+            <h5
+              style={{
+                margin: 0,
+                marginLeft: '4px',
                 marginBottom: '12px',
                 fontVariant: 'small-caps'
               }}>
@@ -215,131 +171,140 @@ const IndexPage = ({ data }) => {
               <CategoryToggle
                 key={category.value}
                 className={category.value === activeCategory ? 'active' : ''}
-                onClick={() => setActiveCategory(category.value)}>
+                onClick={() => {
+                  setGroupBuys(undefined)
+                  setActiveCategory(current =>
+                    category.value === activeCategory ? '' : category.value
+                  )
+                }}>
                 {category.label}
               </CategoryToggle>
             ))}
           </div>
         </div>
-        {filteredGroupBuys.length > 0 ? (
-          <div>
-            {groupBuys.open.length > 0 && (
-              <>
-                <h1 style={{ marginTop: 0 }}>Open</h1>
-                <Grid
-                  initial="hidden"
-                  animate="visible"
-                  variants={listVariants}>
-                  {groupBuys.open.map(groupBuy => (
-                    <GroupBuy
-                      key={`${groupBuy.name}-${groupBuy.end}`}
-                      {...groupBuy}
-                      date={{
-                        label: 'ends',
-                        time: format(
-                          parseISO(groupBuy.status.end),
-                          'MMM do, yyyy'
-                        )
-                      }}
-                    />
-                  ))}
-                </Grid>
-              </>
-            )}
-            {groupBuys.upcoming.length > 0 && (
-              <>
-                <h1 style={{ marginTop: '64px' }}>Upcoming</h1>
-                <Grid
-                  initial="hidden"
-                  animate="visible"
-                  variants={listVariants}>
-                  {groupBuys.upcoming.map(groupBuy => (
-                    <GroupBuy
-                      key={`${groupBuy.name}-${groupBuy.end}`}
-                      {...groupBuy}
-                      date={{
-                        label: 'starts',
-                        time: format(
-                          parseISO(groupBuy.status.start),
-                          'MMM do, yyyy'
-                        )
-                      }}
-                    />
-                  ))}
-                </Grid>
-              </>
-            )}
-            {groupBuys.planned.length > 0 && (
-              <>
-                <h1 style={{ marginTop: '64px' }}>Planned</h1>
-                <Grid
-                  initial="hidden"
-                  animate="visible"
-                  variants={listVariants}>
-                  {groupBuys.planned.map(groupBuy => (
-                    <GroupBuy
-                      key={`${groupBuy.name}-${groupBuy.end}`}
-                      {...groupBuy}
-                      date={{
-                        label: 'estimated',
-                        time: groupBuy.status.eta
-                      }}
-                    />
-                  ))}
-                </Grid>
-              </>
-            )}
-            {groupBuys.closed.length > 0 && (
-              <>
-                <h1 style={{ marginTop: '64px' }}>Closed</h1>
-                <Grid
-                  initial="hidden"
-                  animate="visible"
-                  variants={listVariants}>
-                  {groupBuys.closed.map(groupBuy => (
-                    <GroupBuy
-                      key={`${groupBuy.name}-${groupBuy.end}`}
-                      {...groupBuy}
-                      date={{
-                        label: 'ended',
-                        time: format(
-                          parseISO(groupBuy.status.end),
-                          'MMM do, yyyy'
-                        )
-                      }}
-                    />
-                  ))}
-                </Grid>
-              </>
-            )}
-            {groupBuys.cancelled.length > 0 && (
-              <>
-                <h1 style={{ marginTop: '64px' }}>Cancelled</h1>
-                <Grid
-                  initial="hidden"
-                  animate="visible"
-                  variants={listVariants}>
-                  {groupBuys.cancelled.map(groupBuy => (
-                    <GroupBuy
-                      key={`${groupBuy.name}-${groupBuy.end}`}
-                      {...groupBuy}
-                    />
-                  ))}
-                </Grid>
-              </>
-            )}
-          </div>
+        {groupBuys ? (
+          Object.values(groupBuys).every(list => list.length === 0) ? (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+              <h1 style={{ marginTop: 0 }}>No results</h1>
+              <p>Haha, oops</p>
+            </div>
+          ) : (
+            <div>
+              {groupBuys.open.length > 0 && (
+                <>
+                  <h1 style={{ marginTop: 0 }}>Open</h1>
+                  <Grid
+                    initial="hidden"
+                    animate="visible"
+                    variants={listVariants}>
+                    {groupBuys.open.map(groupBuy => (
+                      <GroupBuy
+                        key={`${groupBuy.name}-${groupBuy.end}`}
+                        {...groupBuy}
+                        date={{
+                          label: 'ends',
+                          time: format(
+                            parseISO(groupBuy.status.end),
+                            'MMM do, yyyy'
+                          )
+                        }}
+                      />
+                    ))}
+                  </Grid>
+                </>
+              )}
+              {groupBuys.upcoming.length > 0 && (
+                <>
+                  <h1 style={{ marginTop: '64px' }}>Upcoming</h1>
+                  <Grid
+                    initial="hidden"
+                    animate="visible"
+                    variants={listVariants}>
+                    {groupBuys.upcoming.map(groupBuy => (
+                      <GroupBuy
+                        key={`${groupBuy.name}-${groupBuy.end}`}
+                        {...groupBuy}
+                        date={{
+                          label: 'starts',
+                          time: format(
+                            parseISO(groupBuy.status.start),
+                            'MMM do, yyyy'
+                          )
+                        }}
+                      />
+                    ))}
+                  </Grid>
+                </>
+              )}
+              {groupBuys.planned.length > 0 && (
+                <>
+                  <h1 style={{ marginTop: '64px' }}>Planned</h1>
+                  <Grid
+                    initial="hidden"
+                    animate="visible"
+                    variants={listVariants}>
+                    {groupBuys.planned.map(groupBuy => (
+                      <GroupBuy
+                        key={`${groupBuy.name}-${groupBuy.end}`}
+                        {...groupBuy}
+                        date={{
+                          label: 'estimated',
+                          time: groupBuy.status.eta
+                        }}
+                      />
+                    ))}
+                  </Grid>
+                </>
+              )}
+              {groupBuys.closed.length > 0 && (
+                <>
+                  <h1 style={{ marginTop: '64px' }}>Closed</h1>
+                  <Grid
+                    initial="hidden"
+                    animate="visible"
+                    variants={listVariants}>
+                    {groupBuys.closed.map(groupBuy => (
+                      <GroupBuy
+                        key={`${groupBuy.name}-${groupBuy.end}`}
+                        {...groupBuy}
+                        date={{
+                          label: 'ended',
+                          time: format(
+                            parseISO(groupBuy.status.end),
+                            'MMM do, yyyy'
+                          )
+                        }}
+                      />
+                    ))}
+                  </Grid>
+                </>
+              )}
+              {groupBuys.cancelled.length > 0 && (
+                <>
+                  <h1 style={{ marginTop: '64px' }}>Cancelled</h1>
+                  <Grid
+                    initial="hidden"
+                    animate="visible"
+                    variants={listVariants}>
+                    {groupBuys.cancelled.map(groupBuy => (
+                      <GroupBuy
+                        key={`${groupBuy.name}-${groupBuy.end}`}
+                        {...groupBuy}
+                      />
+                    ))}
+                  </Grid>
+                </>
+              )}
+            </div>
+          )
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <h1 style={{ marginTop: 0 }}>No results</h1>
-            <p>Haha, oops</p>
-          </div>
+          <Loading />
         )}
       </GridContainer>
     </Wide>
