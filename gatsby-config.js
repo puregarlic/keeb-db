@@ -16,6 +16,14 @@ module.exports = {
         head: true
       }
     },
+    {
+      resolve: `gatsby-plugin-sentry`,
+      options: {
+        dsn: process.env.SENTRY_DSN,
+        environment: process.env.NODE_ENV,
+        enabled: ['production', 'staging'].includes(process.env.NODE_ENV)
+      }
+    },
     `gatsby-plugin-layout`,
     `gatsby-plugin-emotion`,
     `gatsby-plugin-workerize-loader`,

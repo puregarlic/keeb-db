@@ -3,7 +3,8 @@
     "env": {
       "FAUNA_TOKEN": "@fauna-keeb-token",
       "FULLSTORY_ORG": "@fullstory-keeb-org",
-      "GA_TRACKING_ID": "@ga-keeb-id"
+      "GA_TRACKING_ID": "@ga-keeb-id",
+      "SENTRY_DSN": "@sentry-keeb-dsn"
     }
   },
   "alias": "keeb-db.now.sh"
