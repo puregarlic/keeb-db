@@ -10,7 +10,7 @@
     "@mdx-js/mdx": "^1.5.5",
     "@mdx-js/react": "^1.5.5",
     "@rebass/forms": "^4.0.5",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "date-fns": "^2.9.0",
     "dotenv": "^8.2.0",
     "formik": "^2.1.3",
